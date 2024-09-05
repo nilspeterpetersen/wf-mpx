@@ -27,7 +27,7 @@ OPTIONAL_FILE = file("$projectDir/data/OPTIONAL_FILE")
 process alignReads {
     label "wfmpx"
     cpus 4
-    memory '2GB'
+    memory '20GB'
     input:
         // `reads` can be FASTQ, BAM, or uBAM
         tuple val(meta), path("input"), path("index")
@@ -43,8 +43,8 @@ process alignReads {
     if [[ ${params.fastq || meta.is_unaligned} = true ]]; then
         ${params.fastq ? "cat" : "samtools fastq -T '*'" } input \\
         | minimap2 -ax map-ont --secondary=no -L --MD -t 3 "$reference" - \\
-            --cap-kalloc 100m --cap-sw-mem 50m \\
-        | samtools view -b -o unsorted.bam
+            --cap-kalloc 100m --cap-sw-mem 50m > unsorted.sam
+        samtools view -b -o unsorted.sam unsorted.bam
         samtools sort -o ${sample_id}.bam unsorted.bam
         samtools index ${sample_id}.bam
     else
