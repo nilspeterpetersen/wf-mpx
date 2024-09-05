@@ -161,7 +161,7 @@ process noAssembly{
 process medaka_polish {
     label "medaka"
     cpus 2
-    memory '16GB'
+    memory '24GB'
     input:
         tuple val(sample_id),
         val(type),
@@ -177,8 +177,8 @@ process medaka_polish {
         -m ${basecall_model}:consensus
     mv medaka/consensus.fasta medaka/denovo.consensus.fasta
     minimap2 -ax map-ont ${reference} medaka/denovo.consensus.fasta -t 1 \\
-        --cap-kalloc 100m --cap-sw-mem 50m \\
-    | samtools view -b -o unsorted.bam
+        --cap-kalloc 100m --cap-sw-mem 50m > unsorted.sam
+    samtools view unsorted.sam -b -o unsorted.bam
     samtools sort -o ${sample_id}_assembly_mapped.bam unsorted.bam
     """
 }
