@@ -44,7 +44,9 @@ process alignReads {
         ${params.fastq ? "cat" : "samtools fastq -T '*'" } input \\
         | minimap2 -ax map-ont --secondary=no -L --MD -t 3 "$reference" - \\
             --cap-kalloc 100m --cap-sw-mem 50m \\
-        | samtools sort --write-index -o ${sample_id}.bam##idx##${sample_id}.bam.bai
+        | samtools view -b -o unsorted.bam
+        samtools sort -o ${sample_id}.bam unsorted.bam
+        samtools index ${sample_id}.bam
     else
         # we got BAM; make sure it was aligned against the provided reference
         samtools faidx "$reference"
@@ -176,7 +178,8 @@ process medaka_polish {
     mv medaka/consensus.fasta medaka/denovo.consensus.fasta
     minimap2 -ax map-ont ${reference} medaka/denovo.consensus.fasta -t 1 \\
         --cap-kalloc 100m --cap-sw-mem 50m \\
-    | samtools sort -o ${sample_id}_assembly_mapped.bam
+    | samtools view -b -o unsorted.bam
+    samtools sort -o ${sample_id}_assembly_mapped.bam unsorted.bam
     """
 }
 
