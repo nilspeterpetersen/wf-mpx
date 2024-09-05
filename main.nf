@@ -44,7 +44,7 @@ process alignReads {
         ${params.fastq ? "cat" : "samtools fastq -T '*'" } input \\
         | minimap2 -ax map-ont --secondary=no -L --MD -t 3 "$reference" - \\
             --cap-kalloc 100m --cap-sw-mem 50m > unsorted.sam
-        samtools view -b -o unsorted.sam unsorted.bam
+        samtools view unsorted.sam -b -o unsorted.bam
         samtools sort -o ${sample_id}.bam unsorted.bam
         samtools index ${sample_id}.bam
     else
