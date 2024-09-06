@@ -247,7 +247,7 @@ process getParams {
 process makeReport {
     label "wfmpx"
     cpus 1
-    memory '1GB'
+    memory '24GB'
     input:
         path "per-read-stats.tsv.gz"
         path "versions/*"
