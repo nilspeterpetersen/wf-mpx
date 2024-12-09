@@ -96,7 +96,10 @@ process medakaVariants {
         tuple val(sample_id), val(type), path("${sample_id}.annotate.filtered.vcf")
     script:
     """
-    medaka consensus ${sample_id}.bam ${sample_id}.hdf --model ${basecall_model}:consensus
+    #medaka consensus ${sample_id}.bam ${sample_id}.hdf --model ${basecall_model}:consensus
+
+    medaka consensus ${sample_id}.bam ${sample_id}.hdf --model r1041_e82_400bps_fast_g632
+
     medaka variant --gvcf ${reference} ${sample_id}.hdf ${sample_id}.vcf --verbose
     medaka tools annotate --debug --pad 25 ${sample_id}.vcf ${reference} ${sample_id}.bam ${sample_id}.annotate.vcf
     bcftools filter -e "ALT='.'" ${sample_id}.annotate.vcf | bcftools filter -o ${sample_id}.annotate.filtered.vcf -O v -e "INFO/DP<${params.min_coverage}" -
@@ -194,7 +197,6 @@ process bamtobed {
     script:
     """
     bedtools bamtobed -i ${sample_id}_assembly_mapped.bam > ${sample_id}_assembly.bed
-
     """
 }
 
