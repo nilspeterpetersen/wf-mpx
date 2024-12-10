@@ -96,13 +96,14 @@ process medakaVariants {
         tuple val(sample_id), val(type), path("${sample_id}.annotate.filtered.vcf")
     script:
     """
-    medaka consensus ${sample_id}.bam ${sample_id}.hdf --model ${basecall_model}:consensus
+    # Conditionally add :consensus if basecall_model starts with 'dna_'
+    model_option=\$( [[ ${basecall_model} == dna_* ]] && echo "${basecall_model}:consensus" || echo "${basecall_model}" )
+    medaka consensus ${sample_id}.bam ${sample_id}.hdf --model \$model_option
     medaka variant --gvcf ${reference} ${sample_id}.hdf ${sample_id}.vcf --verbose
     medaka tools annotate --debug --pad 25 ${sample_id}.vcf ${reference} ${sample_id}.bam ${sample_id}.annotate.vcf
     bcftools filter -e "ALT='.'" ${sample_id}.annotate.vcf | bcftools filter -o ${sample_id}.annotate.filtered.vcf -O v -e "INFO/DP<${params.min_coverage}" -
     # vcf-annotator ${sample_id}.annotate.filtered.vcf ${genbank} > ${sample_id}.vcf-annotator.vcf
     """
-
 }
 
 process makeConsensus {
@@ -173,8 +174,9 @@ process medaka_polish {
         tuple val(sample_id), val(type), path("medaka/denovo.consensus.fasta"), path("${sample_id}_assembly_mapped.bam")
     script:
     """
+    model_option=\$( [[ ${basecall_model} == dna_* ]] && echo "${basecall_model}:consensus" || echo "${basecall_model}" )
     medaka_consensus -i ${sample_id}_restricted.fastq -t 1 -d flye/assembly.fasta \
-        -m ${basecall_model}:consensus
+        -m \$model_option
     mv medaka/consensus.fasta medaka/denovo.consensus.fasta
     minimap2 -ax map-ont ${reference} medaka/denovo.consensus.fasta -t 1 \\
         --cap-kalloc 100m --cap-sw-mem 50m > unsorted.sam
